@@ -12,27 +12,28 @@ var publicData = (function() {
 
     $('#name').on('keyup', function(e) {
         if (e.keyCode === 13)
-            app.fn.searchPlayer($(this).val());
+            app.fn.getPlayer($(this).val());
     });
 
     var app = {
         currentPlayer: '',
         players: [],
         fn: {
-            getPlayer: function() {
-                $.get("https://api.playbattlegrounds.com/shards/pc-eu/players?filter[playerNames]=" + app.player)
+            getPlayer: function(playerName) {
+                $.get("https://api.playbattlegrounds.com/shards/pc-eu/players?filter[playerNames]=" + playerName)
                 .done(function(result) {
-                    var newPlayer = new app.Player(result);
+                    var newPlayer = new app.fn.Player(result);
                     app.players.push(newPlayer);
                     app.currentPlayer = newPlayer;
-                    app.fn.handleMatches(newPlayer.matches);
+                    app.fn.handleMatches(newPlayer.matches.data);
                 });
             },
             Player: function(playerData) {
                 this.name = playerData.data[0].attributes.name;
                 this.shard = playerData.data[0].attributes.shardId;
                 this.id = playerData.data[0].id;
-                this.matches = playerData.data[0].matches;
+                this.matches = playerData.data[0].relationships.matches;
+                this.matchData = {};
             },
             handleMatches: function(matchArray) {
                 matchArray.forEach(function(match, index) {
@@ -47,7 +48,7 @@ var publicData = (function() {
                 var matchDataIndex = app.savedMatchIds.indexOf(matchId);
 
                 if (matchDataIndex > -1 )
-                    app.currentPlayer.matchData[matchId] = localStorage.getItem(JSON.parse(app.savedMatchIds[matchDataIndex]));
+                    app.currentPlayer.matchData[matchId] = JSON.parse(localStorage.getItem(app.savedMatchIds[matchDataIndex]));
                 else {
                     $.get("https://api.playbattlegrounds.com/shards/pc-eu/matches/" + matchId, function() {})
                     .done(function(responseData) {
@@ -58,8 +59,27 @@ var publicData = (function() {
                     });
                 }
             },
+            MatchStats: function(match, currentPlayer) {
+                this.basic = {};
+                this.basic.duration = match.data.attributes.duration;
+                this.basic.createdAt = match.data.attributes.createdAt;
+                this.basic.gameMode = match.data.attributes.gameMode;
+                this.basic.map = match.data.attributes.mapName;
+
+                if (currentPlayer) {
+
+                    var playerStats = match.included.filter(function(player) {
+                        return player.type === 'participant' && player.attributes.stats.name === currentPlayer;
+                    });
+
+                    this.player = {};
+                    this.player.name = currentPlayer;
+                    this.player.stats = playerStats[0].attributes.stats;
+                }
+            }
+            // TODO: create player data var x = new publicData.fn.MatchStats(publicData.currentPlayer.matchData["80f2069a-7999-49d9-ade0-70b70c08761d"], publicData.currentPlayer.name)
         },
-        savedMatchIds: localStorage.getItem('savedMatchIds')
+        savedMatchIds: JSON.parse(localStorage.getItem('savedMatchIds')) || []
     };
 
     return app;
