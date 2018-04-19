@@ -17,6 +17,7 @@ var publicData = (function() {
 
     $('#createMatches').on('click', function() {
         app.fn.getMatches();
+        app.fn.renderAll(app.currentPlayer);
     });
 
     var app = {
@@ -84,11 +85,18 @@ var publicData = (function() {
             },
             getMatches: function() {
                 var matchData = app.currentPlayer.rawMatchData;
-                for (var match in matchData) {
-                    if (matchData.hasOwnProperty(match)) {
-                        publicData.currentPlayer.filteredMatches[matchData.id] = new publicData.fn.MatchStats(matchData.id, publicData.currentPlayer.name);
-                    }
+                for (var match in matchData)
+                    if (matchData.hasOwnProperty(match))
+                        publicData.currentPlayer.filteredMatches[match] = new publicData.fn.MatchStats(matchData[match], publicData.currentPlayer.name);
+            },
+            renderAll: function(player) {
+                for (var match in player.filteredMatches) {
+                    if (player.filteredMatches.hasOwnProperty(match))
+                        app.fn.render(match);
                 }
+            },
+            render: function(match) {
+                //TODO: hier weitermachen
             }
         },
         savedMatchIds: JSON.parse(localStorage.getItem('savedMatchIds')) || []
