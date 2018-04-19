@@ -15,6 +15,10 @@ var publicData = (function() {
             app.fn.getPlayer($(this).val());
     });
 
+    $('#createMatches').on('click', function() {
+        app.fn.getMatches();
+    });
+
     var app = {
         currentPlayer: '',
         players: [],
@@ -25,15 +29,16 @@ var publicData = (function() {
                     var newPlayer = new app.fn.Player(result);
                     app.players.push(newPlayer);
                     app.currentPlayer = newPlayer;
-                    app.fn.handleMatches(newPlayer.matches.data);
+                    app.fn.handleMatches(newPlayer.rawMatches.data);
                 });
             },
             Player: function(playerData) {
                 this.name = playerData.data[0].attributes.name;
                 this.shard = playerData.data[0].attributes.shardId;
                 this.id = playerData.data[0].id;
-                this.matches = playerData.data[0].relationships.matches;
-                this.matchData = {};
+                this.rawMatches = playerData.data[0].relationships.matches;
+                this.rawMatchData = {};
+                this.filteredMatches = {};
             },
             handleMatches: function(matchArray) {
                 matchArray.forEach(function(match, index) {
@@ -48,14 +53,14 @@ var publicData = (function() {
                 var matchDataIndex = app.savedMatchIds.indexOf(matchId);
 
                 if (matchDataIndex > -1 )
-                    app.currentPlayer.matchData[matchId] = JSON.parse(localStorage.getItem(app.savedMatchIds[matchDataIndex]));
+                    app.currentPlayer.rawMatchData[matchId] = JSON.parse(localStorage.getItem(app.savedMatchIds[matchDataIndex]));
                 else {
                     $.get("https://api.playbattlegrounds.com/shards/pc-eu/matches/" + matchId, function() {})
                     .done(function(responseData) {
                         app.savedMatchIds.push(matchId);
                         localStorage.setItem('savedMatchIds', JSON.stringify(app.savedMatchIds));
                         localStorage.setItem(matchId, JSON.stringify(responseData));
-                        app.currentPlayer.matchData[matchId] = responseData;
+                        app.currentPlayer.rawMatchData[matchId] = responseData;
                     });
                 }
             },
@@ -76,8 +81,15 @@ var publicData = (function() {
                     this.player.name = currentPlayer;
                     this.player.stats = playerStats[0].attributes.stats;
                 }
+            },
+            getMatches: function() {
+                var matchData = app.currentPlayer.rawMatchData;
+                for (var match in matchData) {
+                    if (matchData.hasOwnProperty(match)) {
+                        publicData.currentPlayer.filteredMatches[matchData.id] = new publicData.fn.MatchStats(matchData.id, publicData.currentPlayer.name);
+                    }
+                }
             }
-            // TODO: create player data var x = new publicData.fn.MatchStats(publicData.currentPlayer.matchData["80f2069a-7999-49d9-ade0-70b70c08761d"], publicData.currentPlayer.name)
         },
         savedMatchIds: JSON.parse(localStorage.getItem('savedMatchIds')) || []
     };
