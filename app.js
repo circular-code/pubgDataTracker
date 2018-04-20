@@ -92,11 +92,43 @@ var publicData = (function() {
             renderAll: function(player) {
                 for (var match in player.filteredMatches) {
                     if (player.filteredMatches.hasOwnProperty(match))
-                        app.fn.render(match);
+                        app.fn.render(player.filteredMatches[match]);
                 }
             },
             render: function(match) {
-                //TODO: hier weitermachen
+
+                var template = `<div class="match-wrapper">
+                                    <div class="basic-stats">
+                                        <span>duration: ${match.basic.duration}</span>
+                                        <span>created at: ${match.basic.createdAt}</span>
+                                        <span>game mode: ${match.basic.gameMode}</span>
+                                        <span>map: ${match.basic.map}</span>
+                                    </div>
+                                    <div class="player-stats">
+                                        <span>downed enemies: ${match.player.stats.DBNOs}</span>
+                                        <span>assists: ${match.player.stats.assists}</span>
+                                        <span>boosters used: ${match.player.stats.boosts}</span>
+                                        <span>total damage dealt: ${match.player.stats.damageDealt}</span>
+                                        <span>killed by: ${match.player.stats.deathType}</span>
+                                        <span>headshot kills: ${match.player.stats.headshotKills}</span>
+                                        <span>heals used ${match.player.stats.heals}</span>
+                                        <span>kills: ${match.player.stats.kills}</span>
+                                        <span>kill points: ${match.player.stats.killPoints}</span>
+                                        <span>kill points delta: ${match.player.stats.killPointsDelta}</span>
+                                        <span>revives: ${match.player.stats.revives}</span>
+                                        <span>meters driven per car/bike: ${match.player.stats.rideDistance}</span>
+                                        <span>meters walked: ${match.player.stats.walkDistance}</span>
+                                        <span>roadkills: ${match.player.stats.roadKills}</span>
+                                        <span>teamkills: ${match.player.stats.teamKills}</span>
+                                        <span>time survived: ${match.player.stats.timeSurvived}</span>
+                                        <span>vehicles destroyed: ${match.player.stats.vehicleDestroys}</span>
+                                        <span>finished place: ${match.player.stats.winPlace}</span>
+                                        <span>win points: ${match.player.stats.winPoints}</span>
+                                        <span>win points delta: ${match.player.stats.winPointsDelta}</span>
+                                    </div>
+                                </div>`;
+
+                $('#matches').append(template);
             }
         },
         savedMatchIds: JSON.parse(localStorage.getItem('savedMatchIds')) || []

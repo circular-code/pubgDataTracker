@@ -1,0 +1,14 @@
+.match-wrapper {
+    padding: 20px;
+    border-bottom: 2px solid #f7f7f7;
+}
+
+.basic-stats {
+    margin-bottom: 10px;
+}
+
+.match-wrapper span {
+    margin-right: 20px;
+    min-width: 300px;
+    display: inline-block;
+}
