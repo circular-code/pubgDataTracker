@@ -31,6 +31,11 @@ var publicData = (function() {
                     app.players.push(newPlayer);
                     app.currentPlayer = newPlayer;
                     app.fn.handleMatches(newPlayer.rawMatches.data);
+                })
+                .fail(function(response){
+                    response = JSON.parse(response.responseText);
+                    alert('' + response.errors[0].title + ' - ' + response.errors[0].detail);
+                    $('#matches').html('');
                 });
             },
             Player: function(playerData) {
@@ -90,6 +95,7 @@ var publicData = (function() {
                         publicData.currentPlayer.filteredMatches[match] = new publicData.fn.MatchStats(matchData[match], publicData.currentPlayer.name);
             },
             renderAll: function(player) {
+                $('#matches').html('');
                 for (var match in player.filteredMatches) {
                     if (player.filteredMatches.hasOwnProperty(match))
                         app.fn.render(player.filteredMatches[match]);
@@ -98,6 +104,7 @@ var publicData = (function() {
             render: function(match) {
 
                 var template = `<div class="match-wrapper">
+                                    <span>${match.player.name}</span>
                                     <div class="basic-stats">
                                         <span>duration: ${match.basic.duration}</span>
                                         <span>created at: ${match.basic.createdAt}</span>
